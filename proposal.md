@@ -1,6 +1,6 @@
 ### 1. Motivation and Purpose
 
-Investing in the movie business is like gambling: it may sound glamorous but can be very risky. People sink billions into the movie business each year, fancied by the glam of movies. However, most movies lose money according to a recent post [1]. This year, Disney alone announced a 170 million US dollars loss after *X-Men: Dark Phoenix* [2]. Investors should calm down and study the movie market before diving into the business. Knowing more about the directors' reputation and experience, investors can make better decisions on their investments. To help investors choose the best candidate directors and related studies in the movie industry, we propose creating a data visualization app to organize and visualize the facts of directors. With our app, the investors and researchers can select a movie genre to find out the top 50 experienced directors of that genre in a given time frame, and then review and compare individual director's statistics by filtering.
+Investing in the movie business is like gambling: it may sound glamorous but can be very risky. People sink billions into the movie business each year, fancied by the glam of movies. However, most movies lose money according to a recent post [1]. This year, Disney alone announced a 170 million US dollars loss after *X-Men: Dark Phoenix* [2]. Investors should calm down and study the movie market before diving into the business. Knowing more about the directors' reputation and experience, investors can make better decisions on their investments. To help investors choose the best candidate directors and related studies in the movie industry, we propose creating a data visualization app to organize and visualize the facts of directors. With our app, the investors and researchers can select a movie genre to find out the top 30 experienced directors of that genre in a given time frame, and then review and compare individual director's statistics by filtering.
 
 ### 2. Description of the data
 
@@ -16,7 +16,7 @@ The other two variables describe the outcomes of the movie through ratings (`IMD
 
 Research Question:
 
-1. Who are the top 50 productive directors for a given genre?
+1. Who are the top 30 productive directors for a given genre?
 2. What are the profits of the movies for a specific director for a given timespan?
 3. What are the ratings of the movies for a specific director for a given timespan?
 
