@@ -13,12 +13,6 @@ app <- Dash$new(external_stylesheets = "https://codepen.io/chriddyp/pen/bWLwgP.c
 # Load data 
 movies_df <- read_csv('data/clean/movies_clean_df.csv', col_types = cols(X1 = col_skip()))
 
-# Get genre list
-#genres = map(unique(movies_df$Major_Genre), as.character)
-
-# Get director list
-#directors = map(unique(movies_df$Major_Genre), as.character)
-
 # Add the dropdown for genres
 genreDropdown <- dccDropdown(
   id="Major_Genre",
@@ -37,7 +31,7 @@ directorDropdown <- dccDropdown(
     levels(as.factor(movies_df$Director)), function(x){
       list(label=x, value=x)
     }),
-  value='M. Night Shyamalan',
+  value='Kevin Smith',
   multi= TRUE,
   searchable=TRUE
 )
@@ -69,9 +63,9 @@ make_plot <- function(data = movies_df, genres=all_genres){
     geom_bar(stat = "identity") +
     coord_flip() +
     labs(y = "Number of Movies", x = "Director") +
-    ggtitle("Top 30 most productive directors in: ")
+    ggtitle("Top 30 most productive directors in: ", genres)
     
-    ggplotly(data_plot, width = 500, height = 1000)
+    ggplotly(data_plot, width = 1000, height = 1000)
 }
     graph <- dccGraph(
       id = 'gap-graph',
@@ -96,18 +90,19 @@ make_plot2 <- function(data = movies_df, directors=all_directors){
       figure=make_plot2() # gets initial data using argument defaults
 )
     
-    make_plot3 <- function(data = movies_df, directors=all_directors){
-      top_df <- data %>% 
-        filter(Director %in% directors)
+make_plot3 <- function(data = movies_df, directors=all_directors){
+    top_df <- data %>% 
+      filter(Director %in% directors)
       
-      profit <- top_df %>%
-        ggplot(aes(x = Year, y = Profit_Million, colour = Director)) +
-        geom_line() +
-        geom_point() +
-        labs(y = "Worldwide Profit (Millions USD)", x = "Year", title = "Worldwide Profit by Director")
-      
-      ggplotly(profit, width = 500, height = 1000)
-    }
+    profit <- top_df %>%
+      ggplot(aes(x = Year, y = Profit_Million, colour = Director)) +
+      geom_line() +
+      geom_point() +
+      labs(y = "Worldwide Profit (Millions USD)", x = "Year", title = "Worldwide Profit by Director")
+        
+    ggplotly(profit, width = 500, height = 1000)
+}
+
     graph3 <- dccGraph(
       id = 'profit-graph',
       figure=make_plot3() # gets initial data using argument defaults
@@ -123,8 +118,9 @@ app$layout(
     dccMarkdown("**Hold shift and click on one or more bars** on the bar chart to choose directors to view movie ratings and profits."),
     dccMarkdown("Hover over a point for more details"),
     #selection components go here
-#    htmlLabel("Select a genre"),
+    htmlLabel("Select a genre"),
     genreDropdown,
+    htmlLabel("Select a director"),
     directorDropdown,
 #    htmlIframe(height=15, width=10, style=list(borderWidth = 0)), #space
     #end selection components
