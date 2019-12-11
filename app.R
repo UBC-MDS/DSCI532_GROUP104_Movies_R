@@ -88,12 +88,29 @@ make_plot2 <- function(data = movies_df, directors=all_directors){
       geom_point() +
       labs(y = "IMDB Rating (Scale 1-10)", title = "IMDB Rating by Director") +
       expand_limits(y = 1)
-    
+
     ggplotly(IMDB, width = 500, height = 1000)
 }
     graph2 <- dccGraph(
       id = 'IMDB-graph',
       figure=make_plot2() # gets initial data using argument defaults
+)
+    
+    make_plot3 <- function(data = movies_df, directors=all_directors){
+      top_df <- data %>% 
+        filter(Director %in% directors)
+      
+      profit <- top_df %>%
+        ggplot(aes(x = Year, y = Profit_Million, colour = Director)) +
+        geom_line() +
+        geom_point() +
+        labs(y = "Worldwide Profit (Millions USD)", x = "Year", title = "Worldwide Profit by Director")
+      
+      ggplotly(profit, width = 500, height = 1000)
+    }
+    graph3 <- dccGraph(
+      id = 'profit-graph',
+      figure=make_plot3() # gets initial data using argument defaults
     )
     
 # Set up the app layout
@@ -113,6 +130,7 @@ app$layout(
     #end selection components
     graph,
     graph2,
+    graph3,
     htmlIframe(height=20, width=10, style=list(borderWidth = 0)) #space
  #   dccMarkdown("[Data Source](https://cran.r-project.org/web/packages/gapminder/README.html)")
   
@@ -140,5 +158,14 @@ app$callback(
     
 })
 
+app$callback(
+  output=list(id = 'profit-graph', property='figure'),
+  params=list(
+    input(id = 'Director', property='value')),
+  function(director_value){
+    #' Takes in the genre and director and calls make_plot to update the plot
+    make_plot3(movies_df, director_value)
+    
+  })
 
 app$run_server()
