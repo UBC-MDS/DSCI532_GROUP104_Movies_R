@@ -31,7 +31,14 @@ genreDropdown <- dccDropdown(
     }),
   value='Comedy',
   multi= FALSE,
-  searchable=TRUE
+  searchable=TRUE,
+  style=list( "margin-left"= "30px",
+              "margin-right"= "0px",
+              "margin-top"= "0px",
+              "margin-bottom"="0px",
+              width="120px",
+              height="15px",
+              padding =  0)
 )
 
 directorDropdown <- dccDropdown(
@@ -42,7 +49,14 @@ directorDropdown <- dccDropdown(
     }),
   value=director_list[1],
   multi= TRUE,
-  searchable=TRUE
+  searchable=TRUE,
+  style=list( "margin-left"= "30px",
+              "margin-right"= "0px",
+              "margin-top"= "0px",
+              "margin-bottom"="0px",
+              width="650px",
+              height="15px",
+              padding =  0)
 )
 
 #' 
@@ -202,27 +216,97 @@ make_plot2 <- function(directors = director_list){
       figure=make_plot2() # gets initial data using argument defaults
 )
     
-
+# color dictionary
+colors <- list(
+  deep_blue = '#2e4366',
+  white = '#ffffff',
+  light_blue = '#e6edfa',
+  blue = '#023863'
+)
     
 # Set up the app layout
 app$layout(
   htmlDiv(
   list(
-    htmlH1("Welcome to the Directors Production Tracker App"),
-    htmlH4("Explore different directors based on the number of movies they produce in a genre to find your director for your next movie."),
-    dccMarkdown("**Instructions**"),
-    dccMarkdown("**Hold shift and click on one or more bars** on the bar chart to choose directors to view movie ratings and profits."),
-    dccMarkdown("Hover over a point for more details"),
+    htmlH1("Welcome to the Directors Production Tracker App",
+          style = list(color = colors$deep_blue,
+                      textAlign = 'center',
+                      'font-family'='Monospace',
+                      backgroundColor = colors$light_blue, 
+                      "margin-left"= "5px",
+                      "margin-right"= "5px",
+                      "margin-top"= "5px",
+                      "margin-bottom"="0px",
+                      'font-size'='40px',
+                      padding =  15)),                 
+    htmlH4("Explore directors by their production for your next movie!",
+          style = list(
+                      textAlign = 'center',
+                      backgroundColor = colors$light_blue,
+                      'font-style'='italic',
+                      'font-family'='Monospace', 
+                      "margin-left"= "5px",
+                      "margin-right"= "5px",
+                      "margin-top"= "0px", 
+                      "margin-bottom"="10px",
+                      'font-size'='18px',
+                      padding = 10)),
+    dccMarkdown("**Instructions**",
+            style = list(
+                      #textAlign = 'center',
+                      #backgroundColor = colors$light_blue,
+                      #'font-style'='italic',
+                      'font-family'='George', 
+                      "margin-left"= "25px",
+                      "margin-top"= "0px", 
+                      "margin-bottom"="0px",
+                      'font-size'='21px',
+                      padding = 0)),
+    #dccMarkdown("**Hold shift and click on one or more bars** on the bar chart to choose directors to view movie ratings and profits."),
+    
     #selection components go here
-    htmlLabel("Select a genre"),
+    htmlLabel("Step1: Select a genre to see most productive directors",
+            style = list(
+                      #textAlign = 'center',
+                      #backgroundColor = colors$light_blue,
+                      #'font-style'='italic',
+                      'font-family'='George', 
+                      "margin-left"= "30px",
+                      "margin-top"= "0px", 
+                      "margin-bottom"="10px",
+                      'font-size'='18px',
+                      padding = 0)),
     genreDropdown,
-    htmlLabel("Select a director"),
+    htmlLabel("Step2: Select one or more directors to see ratings and profits of their movies",
+            style = list(
+                      #textAlign = 'center',
+                      #backgroundColor = colors$light_blue,
+                      #'font-style'='italic',
+                      'font-family'='George', 
+                      "margin-left"= "30px",
+                      "margin-top"= "30px", 
+                      "margin-bottom"="10px",
+                      'font-size'='18px',
+                      padding = 0)),
     directorDropdown,
+    dccMarkdown("Tip: Hover over a point for more details         ",
+                style = list(
+                      #color = colors$blue,
+                      textAlign = 'right',
+                      #backgroundColor = colors$light_blue,
+                      #'font-style'='italic',
+                      'font-family'='Monospace', 
+                      "margin-right"= "25px",
+                      "margin-top"= "0px", 
+                      "margin-bottom"="10px",
+                      'font-size'='12px',
+                      padding = 0)),
 #    htmlIframe(height=15, width=10, style=list(borderWidth = 0)), #space
     #end selection components
     htmlDiv(
       graph,
-      style=list(float='left')
+      style=list(float='left',
+                "margin-top"= "30px")
     ),
     htmlDiv(
       graph2,
