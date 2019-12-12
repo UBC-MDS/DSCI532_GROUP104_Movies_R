@@ -36,7 +36,7 @@ genreDropdown <- dccDropdown(
               "margin-right"= "0px",
               "margin-top"= "0px",
               "margin-bottom"="0px",
-              width="120px",
+              width="180px",
               height="15px",
               padding =  0)
 )
@@ -63,14 +63,15 @@ directorDropdown <- dccDropdown(
 #' Finds the number of movies of the most productive directors in the selected genre.
 #' 
 #' @param genre string the selected genre
+#' @param directors string list the selected directors
 #' 
 #' @return a data frame only contains movie information from the most productive 
 #' directors in the selected genre  
 #'
 
-make_plot <- function(genre='Comedy'){
+make_plot <- function(genre='Comedy', directors = director_list){
 
-  top_director <<- movies_df %>% 
+  top_director <- movies_df %>% 
     filter(Major_Genre == genre) %>%
     group_by(Director) %>%
     summarise(Count = n()) %>%
@@ -80,16 +81,21 @@ make_plot <- function(genre='Comedy'){
     mutate(Director = as.factor(Director),
            Director = fct_reorder(Director, Count))
 
+    top_df <- movies_df %>% 
+      inner_join(top_director, by = c("Major_Genre", "Director")) %>%
+      filter(Director %in% directors) %>%
+      arrange(Year)
     
-    top_director %>%
+    p1 <- top_director %>%
         plot_ly(
             y = ~Director, 
             x = ~Count, 
-            type = 'bar'
+            height = 500,
+            width = 600,
+            type = 'bar',
+            showlegend = FALSE
         ) %>%
         layout(
-            height = 600,
-            width = 600,
             font = list(
                 size = 12
             ),
@@ -106,35 +112,22 @@ make_plot <- function(genre='Comedy'){
             yaxis = list(
                 categoryorder = "array",
                 categoryarray = levels(top_director$Director)
-            ),
-            title = list(
-                text = paste("<b>Top", nrow(top_director), "most productive directors in:", genre, "</b>"),
-                font = list(size = 16)
-            ) 
-        ) 
-}
-    graph <- dccGraph(
-      id = 'gap-graph',
-      figure=make_plot() # gets initial data using argument defaults
-    )
+            )
+        )
 
-make_plot2 <- function(directors = director_list){
-    top_df <- movies_df %>% 
-      inner_join(top_director, by = c("Major_Genre", "Director")) %>%
-      filter(Director %in% directors)
-
-    p1 <- top_df %>%
+    p2 <- top_df %>%
         plot_ly(
             x = ~Year, 
             y = ~IMDB_Rating, 
             color = ~Director,
             legendgroup = ~Director,
+            height = 500,
+            width = 600,
             type = 'scatter', 
             mode = 'lines+markers'
         ) %>%
         layout(
-            height = 600,
-            width = 600,
+            
             font = list(
                 size = 12
             ),
@@ -150,19 +143,19 @@ make_plot2 <- function(directors = director_list){
             )
         )
 
-    p2 <- top_df %>%
+    p3 <- top_df %>%
         plot_ly(
             x = ~Year, 
             y = ~Profit_Million, 
             color = ~Director,
             legendgroup = ~Director,
             showlegend = FALSE,
+            height = 500,
+            width = 600,
             type = 'scatter', 
             mode = 'lines+markers'
         ) %>%
         layout(
-            height = 600,
-            width = 600,
             font = list(
                 size = 12
             ),
@@ -182,7 +175,7 @@ make_plot2 <- function(directors = director_list){
         )
 
 
-    p <- subplot(p1, p2, nrows = 2, 
+    p23 <- subplot(p2, p3, nrows = 2, 
                 titleY = T, titleX = T, 
                 margin = 0.1, heights = c(0.5, 0.5)) %>%
         layout(annotations = list(
@@ -210,10 +203,29 @@ make_plot2 <- function(directors = director_list){
                     )
                 )
             )
+    
+    p123 <- subplot(p1, p23, margin = 0.1, titleY = T, titleX = T,nrows = 1) %>%
+        layout(
+            height = 800,
+            width = 1200,
+            annotations = list(
+                    list(
+                        font = list(size = 16), 
+                        text = paste("<b>Top", nrow(top_director), "most productive directors in:", genre, "</b>"),
+                        x = -0.2, 
+                        y = 1.0, 
+                        xref = "paper", 
+                        yref = "paper", 
+                        xanchor = "left", 
+                        yanchor = "bottom", 
+                        showarrow = FALSE
+                    )
+            )
+        )
 }
-    graph2 <- dccGraph(
-      id = 'IMDB-graph',
-      figure=make_plot2() # gets initial data using argument defaults
+graph <- dccGraph(
+      id = 'graph',
+      figure=make_plot() # gets initial data using argument defaults
 )
     
 # color dictionary
@@ -308,10 +320,7 @@ app$layout(
       style=list(float='left',
                 "margin-top"= "30px")
     ),
-    htmlDiv(
-      graph2,
-      style=list(float='right')
-    ),
+
     htmlIframe(height=20, width=10, style=list(borderWidth = 0)) #space
  #   dccMarkdown("[Data Source](https://cran.r-project.org/web/packages/gapminder/README.html)")
   
@@ -321,11 +330,12 @@ app$layout(
 
 
 app$callback(
-  output=list(id = 'gap-graph', property='figure'),
-  params=list(input(id = 'Major_Genre', property='value')),
-  function(genre_value){
+  output=list(id = 'graph', property='figure'),
+  params=list(input(id = 'Major_Genre', property='value'),
+              input(id = 'Director', property='value')),
+  function(genre_value, director_value){
    #' Takes in the genre and director and calls make_plot to update the plot
-    make_plot(genre_value)
+    make_plot(genre_value, director_value)
     
 })
 
@@ -339,10 +349,10 @@ app$callback(
       group_by(Director) %>%
       summarise(Count = n()) %>%
       arrange(desc(Count)) %>%
-      head(30)  %>%
+      head(30) %>%
       pull(Director)
 
-    options = map(
+    map(
       levels(as.factor(director_list)), function(x){
         list(label=x, value=x)
     })
@@ -363,17 +373,5 @@ app$callback(
       pull(Director)
   }
 )
-
-app$callback(
-  output=list(id = 'IMDB-graph', property='figure'),
-  params=list(
-              input(id = 'Director', property='value')),
-  function(director_value){
-    #' Takes in the genre and director and calls make_plot to update the plot
-    make_plot2(director_value)
-    
-})
-
-
 
 app$run_server()
