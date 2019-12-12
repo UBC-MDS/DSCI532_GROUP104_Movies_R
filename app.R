@@ -15,13 +15,23 @@ movies_df <- read_csv('data/clean/movies_clean_df.csv', col_types = cols(X1 = co
 
 top_director <- movies_df 
 
-director_list <- movies_df %>% 
-    filter(Major_Genre == 'Comedy') %>%
+get_top_director <- function(genre='Comedy'){
+
+  movies_df %>% 
+    filter(Major_Genre == genre) %>%
     group_by(Director) %>%
     summarise(Count = n()) %>%
     arrange(desc(Count)) %>%
+    mutate(Major_Genre = genre) %>%
     head(30) %>%
+    mutate(Director = as.factor(Director),
+           Director = fct_reorder(Director, Count))
+
+}
+
+director_list <- get_top_director() %>%
     pull(Director)
+
 # Add the dropdown for genres
 genreDropdown <- dccDropdown(
   id="Major_Genre",
@@ -59,6 +69,7 @@ directorDropdown <- dccDropdown(
               padding =  0)
 )
 
+
 #' 
 #' Finds the number of movies of the most productive directors in the selected genre.
 #' 
@@ -71,15 +82,7 @@ directorDropdown <- dccDropdown(
 
 make_plot <- function(genre='Comedy', directors = director_list){
 
-  top_director <- movies_df %>% 
-    filter(Major_Genre == genre) %>%
-    group_by(Director) %>%
-    summarise(Count = n()) %>%
-    arrange(desc(Count)) %>%
-    mutate(Major_Genre = genre) %>%
-    head(30) %>%
-    mutate(Director = as.factor(Director),
-           Director = fct_reorder(Director, Count))
+  top_director <- get_top_director(genre)
 
     top_df <- movies_df %>% 
       inner_join(top_director, by = c("Major_Genre", "Director")) %>%
@@ -344,12 +347,7 @@ app$callback(
   params=list(input(id = 'Major_Genre', property='value')),
   function(genre_value){
 
-    director_list <- movies_df %>% 
-      filter(Major_Genre == genre_value) %>%
-      group_by(Director) %>%
-      summarise(Count = n()) %>%
-      arrange(desc(Count)) %>%
-      head(30) %>%
+    director_list <- get_top_director(genre_value) %>%
       pull(Director)
 
     map(
@@ -364,14 +362,10 @@ app$callback(
   params=list(input(id = 'Major_Genre', property='value')),
   function(genre_value){
     
-    movies_df %>% 
-      filter(Major_Genre == genre_value) %>%
-      group_by(Director) %>%
-      summarise(Count = n()) %>%
-      arrange(desc(Count)) %>%
-      head(1) %>%
-      pull(Director)
+    director_list <- get_top_director(genre_value) %>%
+        head(1) %>%
+        pull(Director)
   }
 )
 
-app$run_server()
+app$run_server(host = "0.0.0.0", port = Sys.getenv('PORT', 8050))
