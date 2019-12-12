@@ -13,6 +13,12 @@ Users can first choose a genre to explore in the `Genres` dropdown menu. Then us
 
 ![](./img/sketch/app_sketch.PNG)
 
+
+### dashR_deployed
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
+
 ### Contribution
 We welcome all feedback and contributions. If you are interested in contributing to our app, please read our [contributing document](https://github.com/UBC-MDS/DSCI532_GROUP104_Movies_R/blob/master/CONTRIBUTING.md) and our [code of conduct](https://github.com/UBC-MDS/DSCI532_GROUP104_Movies_R/blob/master/CODE_OF_CONDUCT.md). Our [license](https://github.com/UBC-MDS/DSCI532_GROUP104_Movies_R/blob/master/LICENSE) outlines our permissions and copyright information for users.
 
