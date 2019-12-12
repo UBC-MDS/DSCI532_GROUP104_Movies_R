@@ -18,9 +18,12 @@ The (`Major_Genre`) category has 12 categories such as action, drama, comedy, et
 
 Research Questions:
 
-1. Who are the top 30 most productive directors for a given genre?
+1. Who are the most productive directors for a given genre?
+    - This research question will allow users to understand the top directors in their genre of choice. This will narrow down the search for directors since there are thousands of options to explore further analysis. 
 2. What are the profits of the movies for a specific director?
+    - This research question will allow users to understand the profits of one or more director(s) they might be interested in choosing for their movie and compare with other directors' profits. 
 3. What are the ratings of the movies for a specific director?
+    - This research question will allow users to understand the IMDB ratings of one or more director(s) the user might be interested in choosing for their movie and compare with other directors' IMDB rating. 
 
 Usage Scenario:
 
