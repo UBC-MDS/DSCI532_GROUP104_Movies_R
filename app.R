@@ -13,6 +13,15 @@ app <- Dash$new(external_stylesheets = "https://codepen.io/chriddyp/pen/bWLwgP.c
 # Load data 
 movies_df <- read_csv('data/clean/movies_clean_df.csv', col_types = cols(X1 = col_skip()))
 
+top_director <- movies_df 
+
+director_list <- movies_df %>% 
+    filter(Major_Genre == 'Comedy') %>%
+    group_by(Director) %>%
+    summarise(Count = n()) %>%
+    arrange(desc(Count)) %>%
+    head(30) %>%
+    pull(Director)
 # Add the dropdown for genres
 genreDropdown <- dccDropdown(
   id="Major_Genre",
@@ -28,10 +37,10 @@ genreDropdown <- dccDropdown(
 directorDropdown <- dccDropdown(
   id="Director",
   options = map(
-    levels(as.factor(movies_df$Director)), function(x){
+    levels(as.factor(director_list)), function(x){
       list(label=x, value=x)
     }),
-  value='Kevin Smith',
+  value=director_list[1],
   multi= TRUE,
   searchable=TRUE
 )
@@ -39,74 +48,161 @@ directorDropdown <- dccDropdown(
 #' 
 #' Finds the number of movies of the most productive directors in the selected genre.
 #' 
-#' @param df data frame the data frame to work on
-#' @param num int the number of directors to keep in each genre
 #' @param genre string the selected genre
 #' 
 #' @return a data frame only contains movie information from the most productive 
 #' directors in the selected genre  
 #'
 
-all_genres <- unique(movies_df$Major_Genre)
-all_directors <- unique(movies_df$Director)
+make_plot <- function(genre='Comedy'){
 
-make_plot <- function(data = movies_df, genres=all_genres){
-  data1 <- data %>% 
-    filter(Major_Genre %in% genres) %>%
+  top_director <<- movies_df %>% 
+    filter(Major_Genre == genre) %>%
     group_by(Director) %>%
     summarise(Count = n()) %>%
     arrange(desc(Count)) %>%
-    head(30)
-  
-   data_plot <- data1 %>% 
-    ggplot(aes(x = reorder(Director, Count), y = Count)) +
-    geom_bar(stat = "identity") +
-    coord_flip() +
-    labs(y = "Number of Movies", x = "Director") +
-    ggtitle("Top 30 most productive directors in: ", genres)
+    mutate(Major_Genre = genre) %>%
+    head(30) %>%
+    mutate(Director = as.factor(Director),
+           Director = fct_reorder(Director, Count))
+
     
-    ggplotly(data_plot, width = 1000, height = 1000)
+    top_director %>%
+        plot_ly(
+            y = ~Director, 
+            x = ~Count, 
+            type = 'bar'
+        ) %>%
+        layout(
+            height = 600,
+            width = 600,
+            font = list(
+                size = 12
+            ),
+            xaxis = list(
+                showline = T, 
+                showgrid = F,
+                title = '<b>Number of Movies</b>'
+            ),
+            yaxis = list(
+                showline = T,
+                showgrid = T,
+                title = '<b>Director</b>'
+            ),
+            yaxis = list(
+                categoryorder = "array",
+                categoryarray = levels(top_director$Director)
+            ),
+            title = list(
+                text = paste("<b>Top", nrow(top_director), "most productive directors in:", genre, "</b>"),
+                font = list(size = 16)
+            ) 
+        ) 
 }
     graph <- dccGraph(
       id = 'gap-graph',
       figure=make_plot() # gets initial data using argument defaults
     )
 
-make_plot2 <- function(data = movies_df, directors=all_directors){
-    top_df <- data %>% 
+make_plot2 <- function(directors = director_list){
+    top_df <- movies_df %>% 
+      inner_join(top_director, by = c("Major_Genre", "Director")) %>%
       filter(Director %in% directors)
-    
-    IMDB <- top_df %>%
-      ggplot(aes(x = Year, y = IMDB_Rating, colour = Director)) +
-      geom_line() +
-      geom_point() +
-      labs(y = "IMDB Rating (Scale 1-10)", title = "IMDB Rating by Director") +
-      expand_limits(y = 1)
 
-    ggplotly(IMDB, width = 500, height = 1000)
+    p1 <- top_df %>%
+        plot_ly(
+            x = ~Year, 
+            y = ~IMDB_Rating, 
+            color = ~Director,
+            legendgroup = ~Director,
+            type = 'scatter', 
+            mode = 'lines+markers'
+        ) %>%
+        layout(
+            height = 600,
+            width = 600,
+            font = list(
+                size = 12
+            ),
+            xaxis = list(
+                showline = T, 
+                showgrid = F,
+                title = '<b>Year</b>'
+            ),
+            yaxis = list(
+                showline = T,
+                showgrid = T,
+                title = '<b>IMDB Rating (1-10)</b>'
+            )
+        )
+
+    p2 <- top_df %>%
+        plot_ly(
+            x = ~Year, 
+            y = ~Profit_Million, 
+            color = ~Director,
+            legendgroup = ~Director,
+            showlegend = FALSE,
+            type = 'scatter', 
+            mode = 'lines+markers'
+        ) %>%
+        layout(
+            height = 600,
+            width = 600,
+            font = list(
+                size = 12
+            ),
+            xaxis = list(
+                showgrid = F,
+                showgrid = F,
+                title = '<b>Year</b>'
+            ),
+            yaxis = list(
+                showline = T,
+                showgrid = T,
+                title = '<b>Profit (M USD)</b>'
+            ),
+            legend = list( 
+                
+            )
+        )
+
+
+    p <- subplot(p1, p2, nrows = 2, 
+                titleY = T, titleX = T, 
+                margin = 0.1, heights = c(0.5, 0.5)) %>%
+        layout(annotations = list(
+                    list(
+                        font = list(size = 16), 
+                        text = "<b>IMDB Rating by Director</b>",
+                        x = 0.1, 
+                        y = 1.0, 
+                        xref = "paper", 
+                        yref = "paper", 
+                        xanchor = "left", 
+                        yanchor = "bottom", 
+                        showarrow = FALSE
+                    ), 
+                    list(
+                        font = list(size = 16), 
+                        text = "<b>Worldwide Profit by Director</b>",
+                        x = 0.1, 
+                        y = 0.4, 
+                        xref = "paper", 
+                        yref = "paper", 
+                        xanchor = "left", 
+                        yanchor = "bottom", 
+                        showarrow = FALSE
+                    )
+                )
+            )
 }
     graph2 <- dccGraph(
       id = 'IMDB-graph',
       figure=make_plot2() # gets initial data using argument defaults
 )
     
-make_plot3 <- function(data = movies_df, directors=all_directors){
-    top_df <- data %>% 
-      filter(Director %in% directors)
-      
-    profit <- top_df %>%
-      ggplot(aes(x = Year, y = Profit_Million, colour = Director)) +
-      geom_line() +
-      geom_point() +
-      labs(y = "Worldwide Profit (Millions USD)", x = "Year", title = "Worldwide Profit by Director")
-        
-    ggplotly(profit, width = 500, height = 1000)
-}
 
-    graph3 <- dccGraph(
-      id = 'profit-graph',
-      figure=make_plot3() # gets initial data using argument defaults
-    )
     
 # Set up the app layout
 app$layout(
@@ -124,9 +220,14 @@ app$layout(
     directorDropdown,
 #    htmlIframe(height=15, width=10, style=list(borderWidth = 0)), #space
     #end selection components
-    graph,
-    graph2,
-    graph3,
+    htmlDiv(
+      graph,
+      style=list(float='left')
+    ),
+    htmlDiv(
+      graph2,
+      style=list(float='right')
+    ),
     htmlIframe(height=20, width=10, style=list(borderWidth = 0)) #space
  #   dccMarkdown("[Data Source](https://cran.r-project.org/web/packages/gapminder/README.html)")
   
@@ -140,9 +241,44 @@ app$callback(
   params=list(input(id = 'Major_Genre', property='value')),
   function(genre_value){
    #' Takes in the genre and director and calls make_plot to update the plot
-    make_plot(movies_df, genre_value)
+    make_plot(genre_value)
     
 })
+
+app$callback(
+  output=list(id = 'Director', property='options'),
+  params=list(input(id = 'Major_Genre', property='value')),
+  function(genre_value){
+
+    director_list <- movies_df %>% 
+      filter(Major_Genre == genre_value) %>%
+      group_by(Director) %>%
+      summarise(Count = n()) %>%
+      arrange(desc(Count)) %>%
+      head(30)  %>%
+      pull(Director)
+
+    options = map(
+      levels(as.factor(director_list)), function(x){
+        list(label=x, value=x)
+    })
+  }
+)
+
+app$callback(
+  output=list(id = 'Director', property='value'),
+  params=list(input(id = 'Major_Genre', property='value')),
+  function(genre_value){
+    
+    movies_df %>% 
+      filter(Major_Genre == genre_value) %>%
+      group_by(Director) %>%
+      summarise(Count = n()) %>%
+      arrange(desc(Count)) %>%
+      head(1) %>%
+      pull(Director)
+  }
+)
 
 app$callback(
   output=list(id = 'IMDB-graph', property='figure'),
@@ -150,18 +286,10 @@ app$callback(
               input(id = 'Director', property='value')),
   function(director_value){
     #' Takes in the genre and director and calls make_plot to update the plot
-    make_plot2(movies_df, director_value)
+    make_plot2(director_value)
     
 })
 
-app$callback(
-  output=list(id = 'profit-graph', property='figure'),
-  params=list(
-    input(id = 'Director', property='value')),
-  function(director_value){
-    #' Takes in the genre and director and calls make_plot to update the plot
-    make_plot3(movies_df, director_value)
-    
-  })
+
 
 app$run_server()
