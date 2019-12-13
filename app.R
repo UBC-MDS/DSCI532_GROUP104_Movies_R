@@ -12,7 +12,7 @@ library(plotly)
 app <- Dash$new(external_stylesheets = "https://codepen.io/chriddyp/pen/bWLwgP.css")
 
 # Load data 
-movies_df <- read_csv('https://raw.githubusercontent.com/zouwenjiao/DSCI532_GROUP104_Movies_R/master/data/clean/movies_clean_df.csv', col_types = cols(X1 = col_skip()))
+movies_df <- read_csv('https://raw.githubusercontent.com/UBC-MDS/DSCI532_GROUP104_Movies_R/master/data/clean/movies_clean_df.csv', col_types = cols(X1 = col_skip()))
 
 #' 
 #' Finds the number of movies of the most productive directors in the selected genre.
@@ -80,16 +80,19 @@ directorDropdown <- dccDropdown(
 
 
 #' 
-#' Finds the number of movies of the most productive directors in the selected genre.
+#' Plots a bar chart of the top 30 most productive directors in the selected genre and 
+#' two line charts showing the ratings and profits of movies in the selected genre of 
+#' these 30 directors across the years.
 #' 
 #' @param genre string the selected genre
 #' @param directors string list the selected directors
 #' 
-#' @return a data frame only contains movie information from the most productive 
-#' directors in the selected genre  
+#' @return a bar chart of the top 30 most productive directors in the selected genre and 
+#' two line charts showing the ratings and profits of related movies.  
 #'
 make_plot <- function(genre='Comedy', directors = director_list){
   
+  # get information from the 30 most productive directors in the selected genre
   top_director <- get_top_director(genre)
   
   top_df <- movies_df %>% 
@@ -97,6 +100,7 @@ make_plot <- function(genre='Comedy', directors = director_list){
     filter(Director %in% directors) %>%
     arrange(Year)
   
+  # plot a bar chart of the top 30 most productive directors in the selected genre
   p1 <- top_director %>%
     plot_ly(
       y = ~Director, 
@@ -125,7 +129,9 @@ make_plot <- function(genre='Comedy', directors = director_list){
         categoryarray = levels(top_director$Director)
       )
     )
-  
+
+  # plot a line chart of movie ratings in the selected genre of 
+  # these 30 directors across the years
   p2 <- top_df %>%
     plot_ly(
       x = ~Year, 
@@ -158,6 +164,8 @@ make_plot <- function(genre='Comedy', directors = director_list){
       )
     )
   
+  # plot a line chart of movie profits in the selected genre of 
+  # these 30 directors across the years
   p3 <- top_df %>%
     plot_ly(
       x = ~Year, 
@@ -242,6 +250,7 @@ make_plot <- function(genre='Comedy', directors = director_list){
       )
     )
 }
+
 graph <- dccGraph(
   id = 'graph',
   figure=make_plot() # gets initial data using argument defaults
@@ -355,17 +364,18 @@ app$layout(
   )
 )
 
-
+# Update plots with the genre dropdown and the director dropdown
 app$callback(
   output=list(id = 'graph', property='figure'),
   params=list(input(id = 'Major_Genre', property='value'),
               input(id = 'Director', property='value')),
   function(genre_value, director_value){
-    #' Takes in the genre and director and calls make_plot to update the plot
+    # Takes in the genre and director and calls make_plot to update the plot
     make_plot(genre_value, director_value)
     
   })
 
+# Update the director dropdown list with the genre dropdown 
 app$callback(
   output=list(id = 'Director', property='options'),
   params=list(input(id = 'Major_Genre', property='value')),
@@ -381,6 +391,7 @@ app$callback(
   }
 )
 
+# Update the director dropdown default value with the genre dropdown 
 app$callback(
   output=list(id = 'Director', property='value'),
   params=list(input(id = 'Major_Genre', property='value')),
