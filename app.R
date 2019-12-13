@@ -130,12 +130,16 @@ make_plot <- function(genre='Comedy', directors = director_list){
     plot_ly(
       x = ~Year, 
       y = ~IMDB_Rating, 
+      text = ~Title,      
       color = ~Director,
       legendgroup = ~Director,
       height = 500,
       width = 600,
       type = 'scatter', 
-      mode = 'lines+markers'
+      mode = 'lines+markers',
+      hovertemplate = paste('Title: %{text} <br>',
+                            'Year: %{x} <br>',
+                            'IMDB Rating: %{y}')  
     ) %>%
     layout(
       
@@ -158,13 +162,17 @@ make_plot <- function(genre='Comedy', directors = director_list){
     plot_ly(
       x = ~Year, 
       y = ~Profit_Million, 
+      text = ~Title,      
       color = ~Director,
       legendgroup = ~Director,
       showlegend = FALSE,
       height = 500,
       width = 600,
       type = 'scatter', 
-      mode = 'lines+markers'
+      mode = 'lines+markers',
+      hovertemplate = paste('Title: %{text} <br>',
+                            'Year: %{x} <br>',
+                            'Profit: %{y:.2f} Million USD') 
     ) %>%
     layout(
       font = list(
