@@ -12,7 +12,7 @@ library(plotly)
 app <- Dash$new(external_stylesheets = "https://codepen.io/chriddyp/pen/bWLwgP.css")
 
 # Load data 
-movies_df <- read_csv('data/clean/movies_clean_df.csv', col_types = cols(X1 = col_skip()))
+movies_df <- read_csv('https://raw.githubusercontent.com/zouwenjiao/DSCI532_GROUP104_Movies_R/master/data/clean/movies_clean_df.csv', col_types = cols(X1 = col_skip()))
 
 #' 
 #' Finds the number of movies of the most productive directors in the selected genre.
